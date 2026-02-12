@@ -1,7 +1,14 @@
 fastapi>=0.109.0
 uvicorn[standard]>=0.27.0
+pydantic-settings
 pytest
 pytest-asyncio
 httpx
 asyncpg
 sqlalchemy
+alembic
+black
+passlib[bcrypt]
+bcrypt>=4.0,<4.1
+python-jose[cryptography]
+python-multipart
