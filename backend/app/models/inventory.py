@@ -12,7 +12,6 @@ class Inventory(Base, TenantAwareMixin):
 
     product_id = Column(UUID(as_uuid=True), ForeignKey("products.id"), nullable=False)
     
-    quantity = Column(Integer, default=0)
     min_stock = Column(Integer, default=0)
     current_stock = Column(Integer, default=0)
 

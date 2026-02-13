@@ -6,6 +6,7 @@ from fastapi import Depends, HTTPException
 from uuid import UUID
 from app.models.user import User
 from app.core.config import settings
+from app.services.supply_service import SupplyService
 from app.core import security
 from jose import jwt
 from jose.exceptions import JWTError
@@ -59,8 +60,6 @@ async def get_current_user(
     
     return user
 
-# 3. Get Current Tenant (Auto-extracted from User!)
-# WE NO LONGER NEED THE HEADER!
 async def get_current_tenant(
     current_user: User = Depends(get_current_user),
 ) -> UUID:
@@ -69,10 +68,18 @@ async def get_current_tenant(
          raise HTTPException(status_code=400, detail="User is not associated with a tenant")
     return current_user.tenant_id
 
-# 4. Superuser Check
 async def get_current_active_superuser(
     current_user: User = Depends(get_current_user),
 ) -> User:
     if not current_user.is_superuser:
-        raise HTTPException(status_code=400, detail="The user doesn't have enough privileges")
+        raise HTTPException(status_code=403, detail="Forbidden")
     return current_user
+
+def get_supply_service() -> SupplyService:
+    """
+    Dependency that instantiates the SupplyService with the correct settings.
+    """
+    return SupplyService(
+        supplier_url=getattr(settings, "SUPPLIER_API_URL", "https://mock-supplier.com/api"),
+        api_key=getattr(settings, "SUPPLIER_API_KEY", "mock_key_123")
+    )

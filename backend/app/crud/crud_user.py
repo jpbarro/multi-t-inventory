@@ -1,16 +1,24 @@
 from typing import Any, Dict, Optional, Union
+import string
+import secrets
+from typing import Tuple
+from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud.base import CRUDBase
 from app.models.user import User
-from app.schemas.user import UserCreate, UserCreateAndTenant, UserUpdate
+from app.schemas.user import UserCreate, UserUpdate, UserSignUp, UserInviteRequest
 from app.core.security import get_password_hash, verify_password
-from app.crud.crud_tenant import tenant
-from app.schemas.tenant import TenantCreate
+from app.models.tenant import Tenant
+
 # Pre-computed dummy hash so authenticate() takes constant time
 _DUMMY_HASH = get_password_hash("dummy")
 
+def generate_random_password(length: int = 12) -> str:
+    """Generate a secure random password."""
+    alphabet = string.ascii_letters + string.digits + "!@#$%^&*"
+    return ''.join(secrets.choice(alphabet) for _ in range(length))
 
 class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
 
@@ -32,10 +40,45 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         await db.refresh(db_obj)
         return db_obj
     
-    # async def create_user_and_tenant(self, db: AsyncSession, *, obj_in: UserCreateAndTenant) -> User:
-    #     tenant = await tenant.create(db, obj_in=TenantCreate(name=obj_in.tenant_name))
-    #     obj_in.tenant_id = tenant.id
-    #     return await self.create(db, obj_in=obj_in)
+    async def create_tenant_and_user(
+        self, db: AsyncSession, *, obj_in: UserSignUp
+    ) -> User:
+        """
+        Handles the atomic transaction of creating a Tenant and its first User.
+        """
+        new_tenant = Tenant(name=obj_in.tenant_name)
+        db.add(new_tenant)
+        
+        await db.flush() 
+
+        new_user = User(
+            email=obj_in.email,
+            hashed_password=get_password_hash(obj_in.password),
+            full_name=obj_in.full_name,
+            tenant_id=new_tenant.id,
+        )
+        db.add(new_user)
+        
+        await db.commit()
+        await db.refresh(new_user)
+        
+        return new_user
+    
+    async def invite_user(self, db: AsyncSession, *, obj_in: UserInviteRequest, tenant_id: UUID) -> Tuple[User, str]:
+        """
+        Invite a new User to the Tenant and return the User and the temporary password.
+        """
+        password = generate_random_password()
+        new_user = User(
+            email=obj_in.email,
+            hashed_password=get_password_hash(password),
+            full_name=obj_in.full_name,
+            tenant_id=tenant_id,
+        )
+        db.add(new_user)
+        await db.commit()
+        await db.refresh(new_user)
+        return new_user, password
 
     async def update(
         self,

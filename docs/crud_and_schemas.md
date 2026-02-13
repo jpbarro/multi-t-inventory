@@ -101,12 +101,6 @@ In `update()`, we use `exclude_unset=True`.
 * Without this flag, we would accidentally set `description = NULL` in the database.
 * **With this flag**, we ignore `description` and only update `name`.
 
-### 3. Circular Imports
-
-* **Never** import `crud` inside a Pydantic schema.
-* **Never** import a Pydantic schema inside a SQLAlchemy model.
-* Keep `models/`, `schemas/`, and `crud/` strictly separated.
-
 ```
 
 ```

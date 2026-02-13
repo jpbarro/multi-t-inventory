@@ -20,7 +20,7 @@ services:
     env_file:
       - ./backend/.env
     environment:
-      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      DATABASE_URL: postgresql+asyncpg://postgres:password@db:5432/app_db
     ports:
       - "8000:8000"
     depends_on:
@@ -29,9 +29,20 @@ services:
       - ./backend/app:/code/app
 
   # 3. Frontend
-  # web:
-  #   build: ./frontend
-  #   ports: ["3000:3000"]
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
+    depends_on:
+      - api
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
 
 volumes:
   postgres_data:

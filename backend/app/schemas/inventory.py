@@ -3,7 +3,6 @@ from pydantic import BaseModel, ConfigDict
 from typing import Optional
 
 class InventoryBase(BaseModel):
-    quantity: int
     min_stock: int
     current_stock: int
     product_id: UUID
@@ -12,7 +11,6 @@ class InventoryCreate(InventoryBase):
     pass
 
 class InventoryUpdate(BaseModel):
-    quantity: Optional[int] = None
     min_stock: Optional[int] = None
     current_stock: Optional[int] = None
 
@@ -25,3 +23,11 @@ class InventoryPublic(InventoryBase):
     id: UUID
 
     model_config = ConfigDict(from_attributes=True)
+
+class SupplyRequest(BaseModel):
+    quantity: int
+
+class SupplyResponse(BaseModel):
+    status: str
+    message: str
+    external_reference_id: str

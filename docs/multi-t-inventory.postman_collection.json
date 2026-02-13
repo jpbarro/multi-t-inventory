@@ -1,0 +1,964 @@
+{
+	"info": {
+		"_postman_id": "multi-t-inventory-collection",
+		"name": "Multi-T Inventory API",
+		"description": "Complete API collection for the Multi-T Inventory system.\n\nRequires the **seed data** to be loaded first (`cd backend && python -m scripts.seed`).\n\nAll seed users share the password `Test1234!`.\n\n## How to use\n\n### Quick start\n1. Run the folder **1. Login** — this logs in as Super Admin, Acme Corp, Globex, and Wayne, saving each token.\n2. Run any request in **Products**, **Inventory**, or **Tenants**.\n3. Switch tenants by changing the `{{current_token}}` variable, or use the per-tenant inventory requests directly.\n\n### Multi-tenant demo\nRun the folder **4. Multi-Tenant Isolation Demo** top-to-bottom to see tenant isolation in action.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000/api/v1",
+			"type": "string"
+		},
+		{
+			"key": "password",
+			"value": "Test1234!",
+			"type": "string"
+		},
+		{
+			"key": "token_superadmin",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "token_acme",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "token_globex",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "token_wayne",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "current_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "product_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "inventory_id",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{current_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"item": [
+		{
+			"name": "1. Login",
+			"description": "Log in as each seed user. Run this folder first — tokens are saved automatically.\n\nAfter running, `current_token` is set to the Acme Corp token by default.",
+			"item": [
+				{
+					"name": "Login as Super Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const token = pm.response.json().access_token;",
+									"    pm.collectionVariables.set('token_superadmin', token);",
+									"    pm.collectionVariables.set('current_token', token);",
+									"    pm.test('Token saved to token_superadmin', () => pm.expect(token).to.be.a('string'));",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{ "key": "username", "value": "superadmin@system.local", "type": "text" },
+								{ "key": "password", "value": "{{password}}", "type": "text" }
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "login"]
+						},
+						"description": "Super Admin (no tenant). Has superuser privileges for product CRUD and listing tenants."
+					},
+					"response": []
+				},
+				{
+					"name": "Login as Acme Corp (Alice)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const token = pm.response.json().access_token;",
+									"    pm.collectionVariables.set('token_acme', token);",
+									"    pm.collectionVariables.set('current_token', token);",
+									"    pm.test('Token saved to token_acme', () => pm.expect(token).to.be.a('string'));",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{ "key": "username", "value": "alice@acme.com", "type": "text" },
+								{ "key": "password", "value": "{{password}}", "type": "text" }
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "login"]
+						},
+						"description": "Acme Corp tenant — Alice Admin. Has 12 inventory items from seed."
+					},
+					"response": []
+				},
+				{
+					"name": "Login as Globex (Hank)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const token = pm.response.json().access_token;",
+									"    pm.collectionVariables.set('token_globex', token);",
+									"    pm.test('Token saved to token_globex', () => pm.expect(token).to.be.a('string'));",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{ "key": "username", "value": "hank@globex.com", "type": "text" },
+								{ "key": "password", "value": "{{password}}", "type": "text" }
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "login"]
+						},
+						"description": "Globex Industries tenant — Hank Scorpio. Has 8 inventory items from seed."
+					},
+					"response": []
+				},
+				{
+					"name": "Login as Wayne Enterprises (Bruce)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const token = pm.response.json().access_token;",
+									"    pm.collectionVariables.set('token_wayne', token);",
+									"    pm.test('Token saved to token_wayne', () => pm.expect(token).to.be.a('string'));",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{ "key": "username", "value": "bruce@wayne.com", "type": "text" },
+								{ "key": "password", "value": "{{password}}", "type": "text" }
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "login"]
+						},
+						"description": "Wayne Enterprises tenant — Bruce Wayne. Has 8 inventory items from seed."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "2. Auth",
+			"description": "Sign up and invite endpoints.",
+			"item": [
+				{
+					"name": "Sign Up (new tenant)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const json = pm.response.json();",
+									"    pm.test('User created with tenant', () => {",
+									"        pm.expect(json.id).to.be.a('string');",
+									"        pm.expect(json.tenant_id).to.be.a('string');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"newuser@demo.com\",\n    \"full_name\": \"Demo User\",\n    \"password\": \"Test1234!\",\n    \"tenant_name\": \"Demo Tenant\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/signup",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "signup"]
+						},
+						"description": "Creates a brand new tenant and its first user in one atomic operation."
+					},
+					"response": []
+				},
+				{
+					"name": "Invite User to Acme",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const json = pm.response.json();",
+									"    pm.test('Invite returned temp password', () => {",
+									"        pm.expect(json.temporary_password).to.be.a('string');",
+									"    });",
+									"    console.log('Temporary password:', json.temporary_password);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [{ "key": "token", "value": "{{token_acme}}", "type": "string" }]
+						},
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"charlie@acme.com\",\n    \"full_name\": \"Charlie Invited\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/invite",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "invite"]
+						},
+						"description": "Alice (Acme Corp) invites a new user. The response includes a temporary password."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "3. Products (Superuser)",
+			"description": "Product CRUD. Products are global — not tenant-scoped.\n\nCreate/Update/Delete require the superuser token.",
+			"item": [
+				{
+					"name": "List Products",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Returns array of products', () => {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect(pm.response.json()).to.be.an('array');",
+									"});",
+									"// Save first product ID for later use",
+									"const products = pm.response.json();",
+									"if (products.length > 0) {",
+									"    pm.collectionVariables.set('product_id', products[0].id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/products?skip=0&limit=100",
+							"host": ["{{base_url}}"],
+							"path": ["products"],
+							"query": [
+								{ "key": "skip", "value": "0" },
+								{ "key": "limit", "value": "100" }
+							]
+						},
+						"description": "Public endpoint. Lists all 15 seeded products and saves the first product_id."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Product by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Returns product', () => {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect(pm.response.json().id).to.eql(pm.collectionVariables.get('product_id'));",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/products/{{product_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["products", "{{product_id}}"]
+						},
+						"description": "Public endpoint. Uses the `product_id` saved from List Products."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Product",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const json = pm.response.json();",
+									"    pm.collectionVariables.set('product_id', json.id);",
+									"    pm.test('Product created', () => {",
+									"        pm.expect(json.sku).to.eql('DEMO-WX01');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [{ "key": "token", "value": "{{token_superadmin}}", "type": "string" }]
+						},
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Widget X\",\n    \"description\": \"A demo widget\",\n    \"sku\": \"DEMO-WX01\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/products",
+							"host": ["{{base_url}}"],
+							"path": ["products"]
+						},
+						"description": "Requires superuser. Creates a new global product and saves its ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Product",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Product updated', () => {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect(pm.response.json().name).to.eql('Widget X - Updated');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [{ "key": "token", "value": "{{token_superadmin}}", "type": "string" }]
+						},
+						"method": "PATCH",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Widget X - Updated\",\n    \"description\": \"Updated demo widget\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/products/{{product_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["products", "{{product_id}}"]
+						},
+						"description": "Requires superuser. Updates the product saved in `product_id`."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Product",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Product deleted', () => {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [{ "key": "token", "value": "{{token_superadmin}}", "type": "string" }]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/products/{{product_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["products", "{{product_id}}"]
+						},
+						"description": "Requires superuser. Deletes the product saved in `product_id`."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "4. Multi-Tenant Isolation Demo",
+			"description": "Run these requests **top-to-bottom** to see multi-tenant isolation in action.\n\nEach tenant adds the same product to their inventory with different quantities, then lists their inventory to prove they only see their own data.\n\n**Prerequisite:** Run the **1. Login** folder first.",
+			"item": [
+				{
+					"name": "Step 1: List Products (pick one)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const products = pm.response.json();",
+									"pm.test('Seed products exist', () => {",
+									"    pm.expect(products.length).to.be.greaterThan(0);",
+									"});",
+									"// Save the first product for the demo",
+									"pm.collectionVariables.set('product_id', products[0].id);",
+									"console.log('Using product:', products[0].name, '(' + products[0].id + ')');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/products?limit=1",
+							"host": ["{{base_url}}"],
+							"path": ["products"],
+							"query": [{ "key": "limit", "value": "1" }]
+						},
+						"description": "Fetches one product from the global catalog and saves its ID for the next steps."
+					},
+					"response": []
+				},
+				{
+					"name": "Step 2: Acme — List Inventory (seed data)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const items = pm.response.json();",
+									"pm.test('Acme has 12 seeded items', () => {",
+									"    pm.expect(items.length).to.eql(12);",
+									"});",
+									"console.log('Acme inventory count:', items.length);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [{ "key": "token", "value": "{{token_acme}}", "type": "string" }]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/inventory",
+							"host": ["{{base_url}}"],
+							"path": ["inventory"]
+						},
+						"description": "Acme Corp sees its 12 seeded inventory items."
+					},
+					"response": []
+				},
+				{
+					"name": "Step 3: Globex — List Inventory (seed data)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const items = pm.response.json();",
+									"pm.test('Globex has 8 seeded items', () => {",
+									"    pm.expect(items.length).to.eql(8);",
+									"});",
+									"console.log('Globex inventory count:', items.length);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [{ "key": "token", "value": "{{token_globex}}", "type": "string" }]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/inventory",
+							"host": ["{{base_url}}"],
+							"path": ["inventory"]
+						},
+						"description": "Globex Industries sees its 8 seeded inventory items — completely different from Acme."
+					},
+					"response": []
+				},
+				{
+					"name": "Step 4: Wayne — List Inventory (seed data)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const items = pm.response.json();",
+									"pm.test('Wayne has 8 seeded items', () => {",
+									"    pm.expect(items.length).to.eql(8);",
+									"});",
+									"console.log('Wayne inventory count:', items.length);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [{ "key": "token", "value": "{{token_wayne}}", "type": "string" }]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/inventory",
+							"host": ["{{base_url}}"],
+							"path": ["inventory"]
+						},
+						"description": "Wayne Enterprises sees its 8 seeded inventory items — isolated from Acme and Globex."
+					},
+					"response": []
+				},
+				{
+					"name": "Step 5: Acme — Add new product (500 units)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const json = pm.response.json();",
+									"    pm.collectionVariables.set('inventory_id', json.id);",
+									"    pm.test('Acme inventory created with 500 units', () => {",
+									"        pm.expect(json.current_stock).to.eql(500);",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [{ "key": "token", "value": "{{token_acme}}", "type": "string" }]
+						},
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"product_id\": \"{{product_id}}\",\n    \"min_stock\": 50,\n    \"current_stock\": 500\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/inventory",
+							"host": ["{{base_url}}"],
+							"path": ["inventory"]
+						},
+						"description": "Acme adds the product to their inventory with 500 units."
+					},
+					"response": []
+				},
+				{
+					"name": "Step 6: Globex — Add same product (20 units)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    pm.test('Globex inventory created with 20 units', () => {",
+									"        pm.expect(pm.response.json().current_stock).to.eql(20);",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [{ "key": "token", "value": "{{token_globex}}", "type": "string" }]
+						},
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"product_id\": \"{{product_id}}\",\n    \"min_stock\": 5,\n    \"current_stock\": 20\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/inventory",
+							"host": ["{{base_url}}"],
+							"path": ["inventory"]
+						},
+						"description": "Globex adds the **same** product but with only 20 units."
+					},
+					"response": []
+				},
+				{
+					"name": "Step 7: Acme — Verify sees 500 (not 20)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const items = pm.response.json();",
+									"const productId = pm.collectionVariables.get('product_id');",
+									"const match = items.find(i => i.product_id === productId);",
+									"pm.test('Acme sees 500 units for this product', () => {",
+									"    pm.expect(match).to.not.be.undefined;",
+									"    pm.expect(match.current_stock).to.eql(500);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [{ "key": "token", "value": "{{token_acme}}", "type": "string" }]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/inventory",
+							"host": ["{{base_url}}"],
+							"path": ["inventory"]
+						},
+						"description": "Acme lists inventory and confirms they see **500** units — Globex's 20 is invisible to them."
+					},
+					"response": []
+				},
+				{
+					"name": "Step 8: Globex — Verify sees 20 (not 500)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const items = pm.response.json();",
+									"const productId = pm.collectionVariables.get('product_id');",
+									"const match = items.find(i => i.product_id === productId);",
+									"pm.test('Globex sees 20 units for this product', () => {",
+									"    pm.expect(match).to.not.be.undefined;",
+									"    pm.expect(match.current_stock).to.eql(20);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [{ "key": "token", "value": "{{token_globex}}", "type": "string" }]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/inventory",
+							"host": ["{{base_url}}"],
+							"path": ["inventory"]
+						},
+						"description": "Globex lists inventory and confirms they see **20** units — Acme's 500 is invisible to them."
+					},
+					"response": []
+				},
+				{
+					"name": "Step 9: Acme — Update stock to 999",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Acme stock updated to 999', () => {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect(pm.response.json().current_stock).to.eql(999);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [{ "key": "token", "value": "{{token_acme}}", "type": "string" }]
+						},
+						"method": "PATCH",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"current_stock\": 999\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/inventory/{{inventory_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["inventory", "{{inventory_id}}"]
+						},
+						"description": "Acme restocks to 999. This should NOT affect Globex."
+					},
+					"response": []
+				},
+				{
+					"name": "Step 10: Globex — Confirm still 20",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const items = pm.response.json();",
+									"const productId = pm.collectionVariables.get('product_id');",
+									"const match = items.find(i => i.product_id === productId);",
+									"pm.test('Globex still sees 20 after Acme update', () => {",
+									"    pm.expect(match).to.not.be.undefined;",
+									"    pm.expect(match.current_stock).to.eql(20);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [{ "key": "token", "value": "{{token_globex}}", "type": "string" }]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/inventory",
+							"host": ["{{base_url}}"],
+							"path": ["inventory"]
+						},
+						"description": "After Acme updated to 999, Globex still sees `current_stock: 20`. Isolation confirmed."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "5. Inventory (per-tenant)",
+			"description": "General inventory operations. These use `current_token` — change it to switch tenants.\n\nDefault is the last login token (Acme if you ran the Login folder).",
+			"item": [
+				{
+					"name": "List My Inventory",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/inventory?skip=0&limit=100",
+							"host": ["{{base_url}}"],
+							"path": ["inventory"],
+							"query": [
+								{ "key": "skip", "value": "0" },
+								{ "key": "limit", "value": "100" }
+							]
+						},
+						"description": "Lists inventory for whichever tenant owns `current_token`."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Inventory by Product",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/inventory/{{product_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["inventory", "{{product_id}}"]
+						},
+						"description": "Get a specific inventory item by product ID for the current tenant."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Inventory Item",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    pm.collectionVariables.set('inventory_id', pm.response.json().id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"product_id\": \"{{product_id}}\",\n    \"min_stock\": 10,\n    \"current_stock\": 100\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/inventory",
+							"host": ["{{base_url}}"],
+							"path": ["inventory"]
+						},
+						"description": "Add a product to the current tenant's inventory."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Inventory Item",
+					"request": {
+						"method": "PATCH",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"min_stock\": 15,\n    \"current_stock\": 140\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/inventory/{{inventory_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["inventory", "{{inventory_id}}"]
+						},
+						"description": "Update an inventory item for the current tenant."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "6. Tenants (Superuser)",
+			"description": "Superuser-only endpoint to list all tenants in the system.",
+			"item": [
+				{
+					"name": "List All Tenants",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Returns tenant list', () => {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect(pm.response.json()).to.be.an('array');",
+									"    pm.expect(pm.response.json().length).to.be.greaterThan(0);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [{ "key": "token", "value": "{{token_superadmin}}", "type": "string" }]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tenants",
+							"host": ["{{base_url}}"],
+							"path": ["tenants"]
+						},
+						"description": "Requires superuser. Lists all tenants (Acme Corp, Globex Industries, Wayne Enterprises from seed)."
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
