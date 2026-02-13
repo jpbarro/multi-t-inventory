@@ -14,4 +14,5 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     PASSWORD_MAX_LENGTH: int = 72
 
+
 settings = Settings()

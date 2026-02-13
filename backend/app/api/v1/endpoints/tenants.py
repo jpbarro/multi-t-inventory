@@ -8,6 +8,7 @@ from app.schemas.tenant import TenantPublic
 
 router = APIRouter()
 
+
 @router.get("/", response_model=List[TenantPublic])
 async def read_tenants(
     db: AsyncSession = Depends(deps.get_db),

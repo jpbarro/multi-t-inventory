@@ -19,13 +19,17 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade():
-    op.rename_table('stocks', 'inventories')
-    
-    op.drop_constraint('uq_tenant_product_stock', 'inventories', type_='unique')
-    op.create_unique_constraint('uq_tenant_product_inventory', 'inventories', ['tenant_id', 'product_id'])
+    op.rename_table("stocks", "inventories")
+
+    op.drop_constraint("uq_tenant_product_stock", "inventories", type_="unique")
+    op.create_unique_constraint(
+        "uq_tenant_product_inventory", "inventories", ["tenant_id", "product_id"]
+    )
 
 
 def downgrade():
-    op.drop_constraint('uq_tenant_product_inventory', 'inventories', type_='unique')
-    op.create_unique_constraint('uq_tenant_product_stock', 'inventories', ['tenant_id', 'product_id'])
-    op.rename_table('inventories', 'stocks')
+    op.drop_constraint("uq_tenant_product_inventory", "inventories", type_="unique")
+    op.create_unique_constraint(
+        "uq_tenant_product_stock", "inventories", ["tenant_id", "product_id"]
+    )
+    op.rename_table("inventories", "stocks")

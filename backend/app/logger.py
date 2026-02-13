@@ -2,6 +2,7 @@
 Global logger for the multi-t-inventory backend.
 Import `logger` or use `get_logger(__name__)` in any module.
 """
+
 import logging
 import os
 import sys
@@ -17,7 +18,7 @@ def _setup_logger() -> logging.Logger:
     """Create and configure the global application logger."""
     log = logging.getLogger(LOG_NAME)
     if log.handlers:
-        return log 
+        return log
 
     log.setLevel(getattr(logging, LOG_LEVEL, logging.INFO))
     log.propagate = False

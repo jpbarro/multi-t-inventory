@@ -21,6 +21,7 @@ def _unique_email() -> str:
 # create
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_create_user(db_session: AsyncSession, tenant):
     email = _unique_email()
@@ -61,6 +62,7 @@ async def test_create_superuser(db_session: AsyncSession):
 # get_by_email
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_get_by_email(db_session: AsyncSession, tenant):
     email = _unique_email()
@@ -84,6 +86,7 @@ async def test_get_by_email_not_found(db_session: AsyncSession):
 # ---------------------------------------------------------------------------
 # create_tenant_and_user
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_create_tenant_and_user(db_session: AsyncSession):
@@ -110,6 +113,7 @@ async def test_create_tenant_and_user(db_session: AsyncSession):
 # ---------------------------------------------------------------------------
 # invite_user
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_invite_user(db_session: AsyncSession, tenant):
@@ -138,6 +142,7 @@ async def test_invite_user(db_session: AsyncSession, tenant):
 # update
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_update_user_name(db_session: AsyncSession, tenant):
     email = _unique_email()
@@ -158,7 +163,10 @@ async def test_update_user_name(db_session: AsyncSession, tenant):
 async def test_update_user_password(db_session: AsyncSession, tenant):
     email = _unique_email()
     user_in = UserCreate(
-        email=email, full_name="Password Change", password="old_password", tenant_id=tenant.id
+        email=email,
+        full_name="Password Change",
+        password="old_password",
+        tenant_id=tenant.id,
     )
     user = await crud.user.create(db_session, obj_in=user_in)
     old_hash = user.hashed_password
@@ -179,7 +187,10 @@ async def test_update_user_password(db_session: AsyncSession, tenant):
 async def test_update_user_with_dict(db_session: AsyncSession, tenant):
     email = _unique_email()
     user_in = UserCreate(
-        email=email, full_name="Dict Update", password="password123", tenant_id=tenant.id
+        email=email,
+        full_name="Dict Update",
+        password="password123",
+        tenant_id=tenant.id,
     )
     user = await crud.user.create(db_session, obj_in=user_in)
 
@@ -195,7 +206,10 @@ async def test_update_user_without_password(db_session: AsyncSession, tenant):
     """Updating with password=None should not change the hash."""
     email = _unique_email()
     user_in = UserCreate(
-        email=email, full_name="No PW Change", password="password123", tenant_id=tenant.id
+        email=email,
+        full_name="No PW Change",
+        password="password123",
+        tenant_id=tenant.id,
     )
     user = await crud.user.create(db_session, obj_in=user_in)
     old_hash = user.hashed_password
@@ -210,6 +224,7 @@ async def test_update_user_without_password(db_session: AsyncSession, tenant):
 # ---------------------------------------------------------------------------
 # authenticate
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_authenticate_success(db_session: AsyncSession, tenant):

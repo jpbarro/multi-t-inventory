@@ -41,18 +41,16 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         result = await db.execute(query)
         return result.scalars().all()
 
-    async def create(
-        self, db: AsyncSession, *, obj_in: CreateSchemaType
-    ) -> ModelType:
+    async def create(self, db: AsyncSession, *, obj_in: CreateSchemaType) -> ModelType:
         """
         Create a new record.
         """
         # Pydantic v2: model_dump() converts the Pydantic model to a dict
         obj_in_data = obj_in.model_dump()
-        
+
         # Convert dictionary into SQLAlchemy Model
-        db_obj = self.model(**obj_in_data)  
-        
+        db_obj = self.model(**obj_in_data)
+
         db.add(db_obj)
         await db.commit()
         await db.refresh(db_obj)
@@ -63,7 +61,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         db: AsyncSession,
         *,
         db_obj: ModelType,
-        obj_in: Union[UpdateSchemaType, Dict[str, Any]]
+        obj_in: Union[UpdateSchemaType, Dict[str, Any]],
     ) -> ModelType:
         """
         Update an existing record.
@@ -92,9 +90,9 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         query = select(self.model).where(self.model.id == id)
         result = await db.execute(query)
         obj = result.scalars().first()
-        
+
         if obj:
             await db.delete(obj)
             await db.commit()
-            
+
         return obj

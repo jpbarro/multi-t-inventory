@@ -5,7 +5,9 @@ from app.schemas.inventory import SupplyResponse
 
 @pytest.fixture
 def service() -> SupplyService:
-    return SupplyService(supplier_url="https://supplier.example.com", api_key="sk-test-123456")
+    return SupplyService(
+        supplier_url="https://supplier.example.com", api_key="sk-test-123456"
+    )
 
 
 @pytest.mark.asyncio

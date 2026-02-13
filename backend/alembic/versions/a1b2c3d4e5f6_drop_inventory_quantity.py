@@ -23,4 +23,7 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.add_column("inventories", sa.Column("quantity", sa.Integer(), server_default="0", nullable=True))
+    op.add_column(
+        "inventories",
+        sa.Column("quantity", sa.Integer(), server_default="0", nullable=True),
+    )

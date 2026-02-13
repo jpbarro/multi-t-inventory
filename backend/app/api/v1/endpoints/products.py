@@ -10,6 +10,7 @@ from app.schemas.product import ProductCreate, ProductUpdate, ProductPublic
 
 router = APIRouter()
 
+
 @router.get("/", response_model=List[ProductPublic])
 async def read_products(
     db: AsyncSession = Depends(deps.get_db),
@@ -20,6 +21,7 @@ async def read_products(
     Retrieve products.
     """
     return await crud.product.get_multi(db, skip=skip, limit=limit)
+
 
 # 2. CREATE
 @router.post("/", response_model=ProductPublic, status_code=status.HTTP_201_CREATED)
@@ -38,8 +40,9 @@ async def create_product(
             status_code=400,
             detail="The product with this SKU already exists in the system.",
         )
-    
+
     return await crud.product.create(db, obj_in=product_in)
+
 
 @router.get("/{product_id}", response_model=ProductPublic)
 async def read_product(
@@ -55,6 +58,7 @@ async def read_product(
         raise HTTPException(status_code=404, detail="Product not found")
     return product
 
+
 @router.patch("/{product_id}", response_model=ProductPublic)
 async def update_product(
     *,
@@ -69,9 +73,10 @@ async def update_product(
     product = await crud.product.get(db, id=product_id)
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
-    
+
     product = await crud.product.update(db, db_obj=product, obj_in=product_in)
     return product
+
 
 @router.delete("/{product_id}", response_model=ProductPublic)
 async def delete_product(
@@ -86,6 +91,6 @@ async def delete_product(
     product = await crud.product.get(db, id=product_id)
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
-    
+
     product = await crud.product.remove(db, id=product_id)
     return product

@@ -4,11 +4,18 @@ from typing import Any, List
 from app import crud
 from app.api import deps
 from app.models.user import User
-from app.schemas.inventory import InventoryPublic, InventoryCreate, InventoryUpdate, SupplyRequest, SupplyResponse
+from app.schemas.inventory import (
+    InventoryPublic,
+    InventoryCreate,
+    InventoryUpdate,
+    SupplyRequest,
+    SupplyResponse,
+)
 from uuid import UUID
 from app.services.supply_service import SupplyService
 
 router = APIRouter()
+
 
 @router.get("/", response_model=List[InventoryPublic])
 async def read_inventories(
@@ -20,7 +27,10 @@ async def read_inventories(
     """
     Retrieve inventories.
     """
-    return await crud.inventory.get_multi_by_tenant(db, tenant_id=tenant_id, skip=skip, limit=limit)
+    return await crud.inventory.get_multi_by_tenant(
+        db, tenant_id=tenant_id, skip=skip, limit=limit
+    )
+
 
 @router.get("/{product_id}", response_model=InventoryPublic)
 async def read_inventory_by_product(
@@ -32,10 +42,13 @@ async def read_inventory_by_product(
     """
     Retrieve an inventory item by product ID.
     """
-    inventory = await crud.inventory.get_by_product_and_tenant(db, product_id=product_id, tenant_id=tenant_id)
+    inventory = await crud.inventory.get_by_product_and_tenant(
+        db, product_id=product_id, tenant_id=tenant_id
+    )
     if not inventory:
         raise HTTPException(status_code=404, detail="Inventory item not found")
     return inventory
+
 
 @router.post("/", response_model=InventoryPublic, status_code=status.HTTP_201_CREATED)
 async def create_inventory(
@@ -60,6 +73,7 @@ async def create_inventory(
         db, obj_in=inventory_in, tenant_id=tenant_id
     )
 
+
 @router.patch("/{inventory_id}", response_model=InventoryPublic)
 async def update_inventory(
     *,
@@ -76,18 +90,23 @@ async def update_inventory(
         raise HTTPException(status_code=404, detail="Inventory item not found")
 
     if item.tenant_id != tenant_id:
-         raise HTTPException(status_code=404, detail="Inventory item not found")
+        raise HTTPException(status_code=404, detail="Inventory item not found")
 
     return await crud.inventory.update(db, db_obj=item, obj_in=inventory_in)
 
-@router.post("/{inventory_id}/resupply", response_model=SupplyResponse, status_code=status.HTTP_200_OK)
+
+@router.post(
+    "/{inventory_id}/resupply",
+    response_model=SupplyResponse,
+    status_code=status.HTTP_200_OK,
+)
 async def request_more_supply(
     *,
     db: AsyncSession = Depends(deps.get_db),
     inventory_id: UUID,
     supply_in: SupplyRequest,
     current_user: User = Depends(deps.get_current_user),
-    supply_svc: SupplyService = Depends(deps.get_supply_service)
+    supply_svc: SupplyService = Depends(deps.get_supply_service),
 ) -> Any:
     """
     Request more supply from an external vendor when stock is low.
@@ -108,7 +127,7 @@ async def request_more_supply(
         tenant_name=tenant.name,
         product_sku=product.sku,
         product_name=product.name,
-        quantity=supply_in.quantity
+        quantity=supply_in.quantity,
     )
 
     return response
