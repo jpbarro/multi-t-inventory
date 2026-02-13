@@ -41,9 +41,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         await db.refresh(db_obj)
         return db_obj
 
-    async def create_tenant_and_user(
-        self, db: AsyncSession, *, obj_in: UserSignUp
-    ) -> User:
+    async def create_tenant_and_user(self, db: AsyncSession, *, obj_in: UserSignUp) -> User:
         """
         Handles the atomic transaction of creating a Tenant and its first User.
         """
@@ -65,9 +63,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
 
         return new_user
 
-    async def invite_user(
-        self, db: AsyncSession, *, obj_in: UserInviteRequest, tenant_id: UUID
-    ) -> Tuple[User, str]:
+    async def invite_user(self, db: AsyncSession, *, obj_in: UserInviteRequest, tenant_id: UUID) -> Tuple[User, str]:
         """
         Invite a new User to the Tenant and return the User and the temporary password.
         """
@@ -96,17 +92,13 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
             update_data = obj_in.model_dump(exclude_unset=True)
 
         if "password" in update_data and update_data["password"] is not None:
-            update_data["hashed_password"] = get_password_hash(
-                update_data.pop("password")
-            )
+            update_data["hashed_password"] = get_password_hash(update_data.pop("password"))
         else:
             update_data.pop("password", None)
 
         return await super().update(db, db_obj=db_obj, obj_in=update_data)
 
-    async def authenticate(
-        self, db: AsyncSession, *, email: str, password: str
-    ) -> Optional[User]:
+    async def authenticate(self, db: AsyncSession, *, email: str, password: str) -> Optional[User]:
         user = await self.get_by_email(db, email=email)
         if not user:
             # Spend the same time as a real verification to prevent timing enumeration

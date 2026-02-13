@@ -66,9 +66,7 @@ async def test_create_superuser(db_session: AsyncSession):
 @pytest.mark.asyncio
 async def test_get_by_email(db_session: AsyncSession, tenant):
     email = _unique_email()
-    user_in = UserCreate(
-        email=email, full_name="Find Me", password="password123", tenant_id=tenant.id
-    )
+    user_in = UserCreate(email=email, full_name="Find Me", password="password123", tenant_id=tenant.id)
     await crud.user.create(db_session, obj_in=user_in)
 
     found = await crud.user.get_by_email(db_session, email=email)
@@ -120,9 +118,7 @@ async def test_invite_user(db_session: AsyncSession, tenant):
     email = _unique_email()
     invite_in = UserInviteRequest(email=email, full_name="Invited User")
 
-    user, temp_password = await crud.user.invite_user(
-        db_session, obj_in=invite_in, tenant_id=tenant.id
-    )
+    user, temp_password = await crud.user.invite_user(db_session, obj_in=invite_in, tenant_id=tenant.id)
 
     assert user.email == email
     assert user.full_name == "Invited User"
@@ -131,9 +127,7 @@ async def test_invite_user(db_session: AsyncSession, tenant):
     assert len(temp_password) == 12
 
     # the temporary password should actually authenticate
-    authed = await crud.user.authenticate(
-        db_session, email=email, password=temp_password
-    )
+    authed = await crud.user.authenticate(db_session, email=email, password=temp_password)
     assert authed is not None
     assert authed.id == user.id
 
@@ -146,14 +140,10 @@ async def test_invite_user(db_session: AsyncSession, tenant):
 @pytest.mark.asyncio
 async def test_update_user_name(db_session: AsyncSession, tenant):
     email = _unique_email()
-    user_in = UserCreate(
-        email=email, full_name="Old Name", password="password123", tenant_id=tenant.id
-    )
+    user_in = UserCreate(email=email, full_name="Old Name", password="password123", tenant_id=tenant.id)
     user = await crud.user.create(db_session, obj_in=user_in)
 
-    updated = await crud.user.update(
-        db_session, db_obj=user, obj_in=UserUpdate(full_name="New Name")
-    )
+    updated = await crud.user.update(db_session, db_obj=user, obj_in=UserUpdate(full_name="New Name"))
 
     assert updated.full_name == "New Name"
     assert updated.id == user.id
@@ -171,15 +161,11 @@ async def test_update_user_password(db_session: AsyncSession, tenant):
     user = await crud.user.create(db_session, obj_in=user_in)
     old_hash = user.hashed_password
 
-    updated = await crud.user.update(
-        db_session, db_obj=user, obj_in=UserUpdate(password="new_password")
-    )
+    updated = await crud.user.update(db_session, db_obj=user, obj_in=UserUpdate(password="new_password"))
 
     assert updated.hashed_password != old_hash
     # new password should authenticate
-    authed = await crud.user.authenticate(
-        db_session, email=email, password="new_password"
-    )
+    authed = await crud.user.authenticate(db_session, email=email, password="new_password")
     assert authed is not None
 
 
@@ -194,9 +180,7 @@ async def test_update_user_with_dict(db_session: AsyncSession, tenant):
     )
     user = await crud.user.create(db_session, obj_in=user_in)
 
-    updated = await crud.user.update(
-        db_session, db_obj=user, obj_in={"full_name": "Updated Via Dict"}
-    )
+    updated = await crud.user.update(db_session, db_obj=user, obj_in={"full_name": "Updated Via Dict"})
 
     assert updated.full_name == "Updated Via Dict"
 
@@ -214,9 +198,7 @@ async def test_update_user_without_password(db_session: AsyncSession, tenant):
     user = await crud.user.create(db_session, obj_in=user_in)
     old_hash = user.hashed_password
 
-    updated = await crud.user.update(
-        db_session, db_obj=user, obj_in=UserUpdate(full_name="Still Same PW")
-    )
+    updated = await crud.user.update(db_session, db_obj=user, obj_in=UserUpdate(full_name="Still Same PW"))
 
     assert updated.hashed_password == old_hash
 
@@ -230,9 +212,7 @@ async def test_update_user_without_password(db_session: AsyncSession, tenant):
 async def test_authenticate_success(db_session: AsyncSession, tenant):
     email = _unique_email()
     password = "correct_password"
-    user_in = UserCreate(
-        email=email, full_name="Auth User", password=password, tenant_id=tenant.id
-    )
+    user_in = UserCreate(email=email, full_name="Auth User", password=password, tenant_id=tenant.id)
     created = await crud.user.create(db_session, obj_in=user_in)
 
     authed = await crud.user.authenticate(db_session, email=email, password=password)
@@ -244,9 +224,7 @@ async def test_authenticate_success(db_session: AsyncSession, tenant):
 @pytest.mark.asyncio
 async def test_authenticate_wrong_password(db_session: AsyncSession, tenant):
     email = _unique_email()
-    user_in = UserCreate(
-        email=email, full_name="Wrong PW", password="real_password", tenant_id=tenant.id
-    )
+    user_in = UserCreate(email=email, full_name="Wrong PW", password="real_password", tenant_id=tenant.id)
     await crud.user.create(db_session, obj_in=user_in)
 
     authed = await crud.user.authenticate(db_session, email=email, password="wrong")
@@ -256,7 +234,5 @@ async def test_authenticate_wrong_password(db_session: AsyncSession, tenant):
 
 @pytest.mark.asyncio
 async def test_authenticate_nonexistent_email(db_session: AsyncSession):
-    authed = await crud.user.authenticate(
-        db_session, email="nobody@example.com", password="whatever"
-    )
+    authed = await crud.user.authenticate(db_session, email="nobody@example.com", password="whatever")
     assert authed is None

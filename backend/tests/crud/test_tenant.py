@@ -46,9 +46,7 @@ async def test_update_tenant(db_session: AsyncSession):
     tenant = await crud.tenant.create(db_session, obj_in=tenant_in)
 
     update_data = TenantUpdate(name="New Name")
-    updated_tenant = await crud.tenant.update(
-        db_session, db_obj=tenant, obj_in=update_data
-    )
+    updated_tenant = await crud.tenant.update(db_session, db_obj=tenant, obj_in=update_data)
 
     assert updated_tenant.name == "New Name"
     assert updated_tenant.id == tenant.id

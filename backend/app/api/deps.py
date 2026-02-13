@@ -15,9 +15,7 @@ from fastapi import status
 from fastapi.security import OAuth2PasswordBearer
 from app.schemas.token import TokenPayload
 
-reusable_oauth2 = OAuth2PasswordBearer(
-    tokenUrl=f"{settings.API_V1_STR}/login/access-token"
-)
+reusable_oauth2 = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/login/access-token")
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
@@ -35,18 +33,14 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
             await session.close()
 
 
-async def get_current_user(
-    db: AsyncSession = Depends(get_db), token: str = Depends(reusable_oauth2)
-) -> User:
+async def get_current_user(db: AsyncSession = Depends(get_db), token: str = Depends(reusable_oauth2)) -> User:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(
-            token, settings.SECRET_KEY, algorithms=[security.ALGORITHM]
-        )
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[security.ALGORITHM])
         token_data = TokenPayload(**payload)
         if not token_data.sub:
             raise credentials_exception
@@ -71,9 +65,7 @@ async def get_current_tenant(
 ) -> UUID:
     if not current_user.tenant_id:
         # Superusers might not have a tenant, handle accordingly
-        raise HTTPException(
-            status_code=400, detail="User is not associated with a tenant"
-        )
+        raise HTTPException(status_code=400, detail="User is not associated with a tenant")
     return current_user.tenant_id
 
 
@@ -90,8 +82,6 @@ def get_supply_service() -> SupplyService:
     Dependency that instantiates the SupplyService with the correct settings.
     """
     return SupplyService(
-        supplier_url=getattr(
-            settings, "SUPPLIER_API_URL", "https://mock-supplier.com/api"
-        ),
+        supplier_url=getattr(settings, "SUPPLIER_API_URL", "https://mock-supplier.com/api"),
         api_key=getattr(settings, "SUPPLIER_API_KEY", "mock_key_123"),
     )

@@ -27,9 +27,7 @@ async def read_inventories(
     """
     Retrieve inventories.
     """
-    return await crud.inventory.get_multi_by_tenant(
-        db, tenant_id=tenant_id, skip=skip, limit=limit
-    )
+    return await crud.inventory.get_multi_by_tenant(db, tenant_id=tenant_id, skip=skip, limit=limit)
 
 
 @router.get("/{product_id}", response_model=InventoryPublic)
@@ -42,9 +40,7 @@ async def read_inventory_by_product(
     """
     Retrieve an inventory item by product ID.
     """
-    inventory = await crud.inventory.get_by_product_and_tenant(
-        db, product_id=product_id, tenant_id=tenant_id
-    )
+    inventory = await crud.inventory.get_by_product_and_tenant(db, product_id=product_id, tenant_id=tenant_id)
     if not inventory:
         raise HTTPException(status_code=404, detail="Inventory item not found")
     return inventory
@@ -69,9 +65,7 @@ async def create_inventory(
             detail="This product is already in your inventory. Use PATCH to update stock.",
         )
 
-    return await crud.inventory.create_with_tenant(
-        db, obj_in=inventory_in, tenant_id=tenant_id
-    )
+    return await crud.inventory.create_with_tenant(db, obj_in=inventory_in, tenant_id=tenant_id)
 
 
 @router.patch("/{inventory_id}", response_model=InventoryPublic)
