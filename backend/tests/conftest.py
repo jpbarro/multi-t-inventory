@@ -3,7 +3,7 @@ from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy.pool import NullPool
 from app.api.deps import get_db
-from app.db.base import Base
+from app.db.session import Base
 from app.main import app
 
 TEST_DATABASE_URL = "postgresql+asyncpg://postgres:password@localhost:5432/test_db"
