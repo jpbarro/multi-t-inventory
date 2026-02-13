@@ -4,6 +4,7 @@ from sqlalchemy.dialects.postgresql import UUID
 import uuid
 from sqlalchemy.orm import relationship
 
+
 class Tenant(Base):
     __tablename__ = "tenants"
 

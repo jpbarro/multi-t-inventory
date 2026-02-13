@@ -10,7 +10,7 @@ async def test_signup_success(client: AsyncClient):
         "password": "strongpassword123",
         "tenant_name": "New Tenant",
     }
-    response = await client.post("/api/v1/users/", json=payload)
+    response = await client.post("/api/v1/auth/signup", json=payload)
 
     assert response.status_code == 201
     data = response.json()
@@ -31,11 +31,11 @@ async def test_signup_duplicate_email(client: AsyncClient):
         "tenant_name": "Dup Tenant",
     }
     # Create the first user
-    response = await client.post("/api/v1/users/", json=payload)
+    response = await client.post("/api/v1/auth/signup", json=payload)
     assert response.status_code == 201
 
     # Attempt to create a second user with the same email
-    response = await client.post("/api/v1/users/", json=payload)
+    response = await client.post("/api/v1/auth/signup", json=payload)
     assert response.status_code == 400
     assert "already exists" in response.json()["detail"]
 
@@ -44,5 +44,5 @@ async def test_signup_duplicate_email(client: AsyncClient):
 async def test_signup_missing_fields(client: AsyncClient):
     # Missing email, password, and tenant_name
     payload = {"full_name": "Incomplete User"}
-    response = await client.post("/api/v1/users/", json=payload)
+    response = await client.post("/api/v1/auth/signup", json=payload)
     assert response.status_code == 422

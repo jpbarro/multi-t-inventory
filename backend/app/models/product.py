@@ -4,6 +4,7 @@ from sqlalchemy.dialects.postgresql import UUID
 import uuid
 from sqlalchemy.orm import relationship
 
+
 class Product(Base):
     __tablename__ = "products"
 
@@ -11,5 +12,5 @@ class Product(Base):
     name = Column(String, nullable=False, index=True)
     description = Column(Text, nullable=True)
     sku = Column(String, unique=True, index=True)
-    
+
     inventories = relationship("Inventory", back_populates="product")
