@@ -1,11 +1,12 @@
 from uuid import UUID
 from pydantic import BaseModel, ConfigDict
 from typing import Optional
+from pydantic import Field
 
 
 class InventoryBase(BaseModel):
-    min_stock: int
-    current_stock: int
+    min_stock: int = Field(ge=0)
+    current_stock: int = Field(ge=0)
     product_id: UUID
 
 
@@ -14,8 +15,8 @@ class InventoryCreate(InventoryBase):
 
 
 class InventoryUpdate(BaseModel):
-    min_stock: Optional[int] = None
-    current_stock: Optional[int] = None
+    min_stock: Optional[int] = Field(None, ge=0)
+    current_stock: Optional[int] = Field(None, ge=0)
 
 
 class InventoryInDBBase(InventoryBase):
@@ -31,7 +32,7 @@ class InventoryPublic(InventoryBase):
 
 
 class SupplyRequest(BaseModel):
-    quantity: int
+    quantity: int = Field(ge=0)
 
 
 class SupplyResponse(BaseModel):

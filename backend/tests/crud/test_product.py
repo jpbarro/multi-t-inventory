@@ -52,9 +52,7 @@ async def test_update_product(db_session: AsyncSession):
     product = await crud.product.create(db_session, obj_in=product_in)
 
     update_data = ProductUpdate(name="Updated Name")
-    updated_product = await crud.product.update(
-        db_session, db_obj=product, obj_in=update_data
-    )
+    updated_product = await crud.product.update(db_session, db_obj=product, obj_in=update_data)
 
     assert updated_product.name == "Updated Name"
     assert updated_product.sku == sku

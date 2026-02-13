@@ -82,7 +82,24 @@ pytest tests/
 
 Coverage for `app/crud` is printed automatically. An HTML report is generated at `backend/htmlcov/index.html`.
 
-## 6. API docs
+## 6. Lint & format
+
+The CI pipeline enforces formatting and linting with [Ruff](https://docs.astral.sh/ruff/). Run these before pushing to avoid failed checks:
+
+```bash
+cd backend
+ruff format .       # auto-format code
+ruff check --fix .  # lint and auto-fix what it can
+```
+
+To check without modifying files (what CI runs):
+
+```bash
+ruff format --check .
+ruff check .
+```
+
+## 7. API docs
 
 Once the API is running, interactive docs are available at:
 

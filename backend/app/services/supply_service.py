@@ -23,10 +23,6 @@ class SupplyService:
 
         message = f"{tenant_name} requested {quantity} of product: {product_name} (SKU: {product_sku})"
 
-        logger.info(
-            f"Sending to {self.supplier_url} using key {self.api_key[:4]}*** : {message}"
-        )
+        logger.info(f"Sending to {self.supplier_url} using key {self.api_key[:4]}*** : {message}")
 
-        return SupplyResponse(
-            status="success", message=message, external_reference_id="MOCK-REQ-999"
-        )
+        return SupplyResponse(status="success", message=message, external_reference_id="MOCK-REQ-999")

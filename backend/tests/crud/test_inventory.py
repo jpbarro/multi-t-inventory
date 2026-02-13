@@ -37,9 +37,7 @@ async def test_create_inventory_with_tenant(db_session, tenant, product):
         current_stock=100,
     )
 
-    inventory = await crud.inventory.create_with_tenant(
-        db_session, obj_in=inv_in, tenant_id=tenant.id
-    )
+    inventory = await crud.inventory.create_with_tenant(db_session, obj_in=inv_in, tenant_id=tenant.id)
 
     assert inventory.tenant_id == tenant.id
     assert inventory.product_id == product.id
@@ -51,9 +49,7 @@ async def test_create_inventory_with_tenant(db_session, tenant, product):
 @pytest.mark.asyncio
 async def test_get_inventory(db_session, tenant, product):
     inv_in = InventoryCreate(product_id=product.id, min_stock=5, current_stock=50)
-    created = await crud.inventory.create_with_tenant(
-        db_session, obj_in=inv_in, tenant_id=tenant.id
-    )
+    created = await crud.inventory.create_with_tenant(db_session, obj_in=inv_in, tenant_id=tenant.id)
 
     stored = await crud.inventory.get(db_session, id=created.id)
 
@@ -66,13 +62,9 @@ async def test_get_inventory(db_session, tenant, product):
 @pytest.mark.asyncio
 async def test_get_by_product_and_tenant(db_session, tenant, product):
     inv_in = InventoryCreate(product_id=product.id, min_stock=3, current_stock=30)
-    await crud.inventory.create_with_tenant(
-        db_session, obj_in=inv_in, tenant_id=tenant.id
-    )
+    await crud.inventory.create_with_tenant(db_session, obj_in=inv_in, tenant_id=tenant.id)
 
-    stored = await crud.inventory.get_by_product_and_tenant(
-        db_session, product_id=product.id, tenant_id=tenant.id
-    )
+    stored = await crud.inventory.get_by_product_and_tenant(db_session, product_id=product.id, tenant_id=tenant.id)
 
     assert stored
     assert stored.product_id == product.id
@@ -84,13 +76,9 @@ async def test_get_by_product_and_tenant(db_session, tenant, product):
 async def test_get_multi_by_tenant(db_session, tenant, product, second_product):
     for p in [product, second_product]:
         inv_in = InventoryCreate(product_id=p.id, min_stock=1, current_stock=10)
-        await crud.inventory.create_with_tenant(
-            db_session, obj_in=inv_in, tenant_id=tenant.id
-        )
+        await crud.inventory.create_with_tenant(db_session, obj_in=inv_in, tenant_id=tenant.id)
 
-    inventories = await crud.inventory.get_multi_by_tenant(
-        db_session, tenant_id=tenant.id
-    )
+    inventories = await crud.inventory.get_multi_by_tenant(db_session, tenant_id=tenant.id)
 
     assert len(inventories) >= 2
     assert all(inv.tenant_id == tenant.id for inv in inventories)
@@ -100,14 +88,10 @@ async def test_get_multi_by_tenant(db_session, tenant, product, second_product):
 @pytest.mark.asyncio
 async def test_update_inventory(db_session, tenant, product):
     inv_in = InventoryCreate(product_id=product.id, min_stock=2, current_stock=20)
-    inventory = await crud.inventory.create_with_tenant(
-        db_session, obj_in=inv_in, tenant_id=tenant.id
-    )
+    inventory = await crud.inventory.create_with_tenant(db_session, obj_in=inv_in, tenant_id=tenant.id)
 
     update_data = InventoryUpdate(current_stock=99, min_stock=15)
-    updated = await crud.inventory.update(
-        db_session, db_obj=inventory, obj_in=update_data
-    )
+    updated = await crud.inventory.update(db_session, db_obj=inventory, obj_in=update_data)
 
     assert updated.current_stock == 99
     assert updated.min_stock == 15
@@ -118,11 +102,33 @@ async def test_update_inventory(db_session, tenant, product):
 @pytest.mark.asyncio
 async def test_delete_inventory(db_session, tenant, product):
     inv_in = InventoryCreate(product_id=product.id, min_stock=1, current_stock=5)
-    inventory = await crud.inventory.create_with_tenant(
-        db_session, obj_in=inv_in, tenant_id=tenant.id
-    )
+    inventory = await crud.inventory.create_with_tenant(db_session, obj_in=inv_in, tenant_id=tenant.id)
 
     await crud.inventory.remove(db_session, id=inventory.id)
 
     deleted = await crud.inventory.get(db_session, id=inventory.id)
     assert deleted is None
+
+
+# 7. Test Tenant Isolation
+@pytest.mark.asyncio
+async def test_tenant_a_cannot_see_tenant_b_inventory(db_session, tenant, product):
+    tenant_b = await crud.tenant.create(db_session, obj_in=TenantCreate(name="Tenant B"))
+
+    inv_a = InventoryCreate(product_id=product.id, min_stock=1, current_stock=10)
+    await crud.inventory.create_with_tenant(db_session, obj_in=inv_a, tenant_id=tenant.id)
+
+    sku_b = f"ISO-{uuid.uuid4().hex[:8]}"
+    product_b = await crud.product.create(db_session, obj_in=ProductCreate(name="Product B", sku=sku_b))
+    inv_b = InventoryCreate(product_id=product_b.id, min_stock=2, current_stock=20)
+    await crud.inventory.create_with_tenant(db_session, obj_in=inv_b, tenant_id=tenant_b.id)
+
+    tenant_a_inventory = await crud.inventory.get_multi_by_tenant(db_session, tenant_id=tenant.id)
+    tenant_b_inventory = await crud.inventory.get_multi_by_tenant(db_session, tenant_id=tenant_b.id)
+
+    assert all(inv.tenant_id == tenant.id for inv in tenant_a_inventory)
+    assert all(inv.tenant_id == tenant_b.id for inv in tenant_b_inventory)
+
+    tenant_b_ids = {inv.id for inv in tenant_b_inventory}
+    tenant_a_ids = {inv.id for inv in tenant_a_inventory}
+    assert tenant_a_ids.isdisjoint(tenant_b_ids)
