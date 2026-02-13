@@ -11,7 +11,7 @@ import uuid
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.session import AsyncSessionLocal, engine, Base
+from app.db.session import AsyncSessionLocal, engine
 from app.models.tenant import Tenant
 from app.models.user import User
 from app.models.product import Product
@@ -244,7 +244,7 @@ async def main() -> None:
 
     print("\nDone! Mock data inserted successfully.")
     print(f"\nDefault password for all users: {DEFAULT_PASSWORD}")
-    print(f"\nSuper Admin (no tenant):")
+    print("\nSuper Admin (no tenant):")
     print(f"  - {SUPER_ADMIN['email']} ({SUPER_ADMIN['full_name']}) [superuser]")
     print("\nTenants & Users:")
     for t_idx, t in enumerate(TENANTS):
